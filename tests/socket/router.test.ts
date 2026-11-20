@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/node'
+import assert from 'node:assert'
 import { APIKeyScope } from '../../src/entities/api-key.js'
 import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket.js'
 import GameChannelFactory from '../fixtures/GameChannelFactory.js'
@@ -25,6 +27,35 @@ describe('Socket router', () => {
         },
       })
     })
+  })
+
+  it('should reject messages that are not valid JSON without reporting to Sentry', async () => {
+    const [apiKey] = await createAPIKeyAndToken([])
+    const ticket = await createSocketTicket(redis, apiKey, false)
+
+    Sentry.init({ beforeSend: () => null })
+
+    const sentryClient = Sentry.getClient()
+    assert(sentryClient)
+
+    const captureException = vi.spyOn(sentryClient, 'captureException')
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.send('{"req":')
+      await client.expectJsonToStrictEqual({
+        res: 'v1.error',
+        data: {
+          req: 'unknown',
+          message: 'Invalid message request',
+          errorCode: 'INVALID_MESSAGE',
+          cause: '{"req":',
+        },
+      })
+    })
+
+    expect(captureException).not.toHaveBeenCalled()
+    captureException.mockRestore()
+    await Sentry.close()
   })
 
   it('should reject unknown requests', async () => {

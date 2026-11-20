@@ -10,10 +10,15 @@ import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
 import Player from '../../../entities/player.js'
+import {
+  checkClaimKeyMatches,
+  throwInvalidClaimKey,
+  verifyClaimKey,
+} from '../../../lib/auth/claim-key.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { mergeDocs } from './docs.js'
 
@@ -138,9 +143,7 @@ export const mergeRoute = apiRoute({
   path: '/merge',
   docs: mergeDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       playerId1: z.uuid().meta({
         description:
@@ -150,11 +153,14 @@ export const mergeRoute = apiRoute({
         description:
           'The second player ID. This player cannot have a Steamworks, Google Play Games, Apple Game Center, or Talo Player Authentication alias.',
       }),
+      player2ClaimKey: z.string().min(1).max(255).optional().meta({
+        description: 'Required if the second player has a claim key.',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
-    const { playerId1, playerId2 } = ctx.state.validated.body
+    const { playerId1, playerId2, player2ClaimKey } = ctx.state.validated.body
     const em = ctx.em.fork()
 
     if (playerId1 === playerId2) {
@@ -179,6 +185,25 @@ export const mergeRoute = apiRoute({
 
     if (!player2) {
       return ctx.throw(404, `Player ${playerId2} does not exist`)
+    }
+
+    // if either player has a claim key, ensure the current alias belongs to
+    // the surviving player, and that the claim key is correct for them
+    if (player1.claimKey !== null || player2.claimKey !== null) {
+      const callerAlias = await em.repo(PlayerAlias).findOne({
+        id: ctx.state.currentAliasId,
+        player: { game: key.game },
+      })
+
+      if (!callerAlias || callerAlias.player.id !== player1.id) {
+        return ctx.throw(403, `This merge must be initiated by player ${playerId1}`)
+      }
+
+      verifyClaimKey(ctx, callerAlias)
+    }
+
+    if (!checkClaimKeyMatches(player2, player2ClaimKey)) {
+      return throwInvalidClaimKey(ctx)
     }
 
     const player1RestrictedAlias = await findRestrictedAlias(em, player1)
@@ -214,6 +239,11 @@ export const mergeRoute = apiRoute({
           { playerAlias: { player: player1 }, devBuild: { $ne: player1.devBuild } },
           { devBuild: player1.devBuild },
         )
+      // player1 keeps its key. if it doesn't have one, it gets player2's key.
+      await trx
+        .repo(Player)
+        .nativeUpdate({ id: player1.id, claimKey: null }, { claimKey: player2.claimKey })
+
       await trx.repo(Player).nativeDelete(player2)
 
       await ctx.clickhouse.command({

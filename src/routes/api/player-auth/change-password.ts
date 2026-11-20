@@ -3,8 +3,10 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import {
+  playerAliasHeaderSchema,
+  playerHeaderSchema,
+} from '../../../lib/validation/playerHeadersSchema.js'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { createPlayerAuthActivity, loadAliasWithAuth } from './common.js'

@@ -66,8 +66,12 @@ export default class PlayerAlias {
     game: Game
     service: string
     identifier: string
-  }) {
-    const trimmedService = service.trim()
+  }): Promise<{
+    identifier: string
+    initialPlayerProps?: { key: string; value: string }[]
+    verified: boolean
+  }> {
+    const trimmedService = service.trim().toLowerCase()
     const trimmedIdentifier = identifier.trim()
 
     const type = {
@@ -77,7 +81,7 @@ export default class PlayerAlias {
     }[trimmedService]
 
     if (!type) {
-      return { identifier: trimmedIdentifier }
+      return { identifier: trimmedIdentifier, verified: false }
     }
 
     return PlayerAlias.resolveWithIntegrations({
@@ -106,19 +110,24 @@ export default class PlayerAlias {
       .find({ game, type }, { orderBy: { createdAt: 'desc' } })
 
     if (integrations.length === 0) {
-      return { identifier }
+      return { identifier, verified: false }
     }
 
     let lastError: unknown
     for (const integration of integrations) {
       try {
-        return await integration.getPlayerIdentifier(em, identifier)
+        const resolved = await integration.getPlayerIdentifier(em, identifier)
+        return { ...resolved, verified: true }
       } catch (err) {
         lastError = err
       }
     }
 
     throw lastError
+  }
+
+  static isClaimKeyExempt(service: string) {
+    return service === PlayerAliasService.TALO
   }
 
   static getSocketDataKey(id: number) {

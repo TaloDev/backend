@@ -1,7 +1,7 @@
-import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
+import { FilterQuery, Loaded } from '@mikro-orm/mysql'
 import { Context, Next } from 'koa'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias.js'
-import { verify } from '../lib/auth/jwt.js'
+import { validateSessionTokenJWT } from '../lib/auth/session-token.js'
 import { throwPlayerAuthError } from '../lib/errors/throwPlayerAuthError.js'
 import { APIRouteContext } from '../lib/routing/context.js'
 import { isAPIRoute } from '../lib/routing/route-info.js'
@@ -75,16 +75,17 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
     })
   }
 
-  const valid = await validateSessionTokenJWT(
-    ctx.em,
-    sessionToken as string,
-    alias,
-    ctx.state.currentPlayerId,
-    ctx.state.currentAliasId,
-  )
+  const valid = await validateSessionTokenJWT({
+    sessionToken: sessionToken as string,
+    player: alias.player,
+    playerId: ctx.state.currentPlayerId,
+    aliasId: ctx.state.currentAliasId,
+  })
   if (!valid) {
     return throwInvalidSessionError(ctx)
   }
+
+  ctx.state.sessionPlayerId = alias.player.id
 }
 
 export function throwInvalidSessionError(ctx: Context): never {
@@ -94,27 +95,4 @@ export function throwInvalidSessionError(ctx: Context): never {
     message: 'The x-talo-session header is invalid',
     errorCode: 'INVALID_SESSION',
   })
-}
-
-export async function validateSessionTokenJWT(
-  em: EntityManager,
-  sessionToken: string,
-  alias: PlayerAliasPartial,
-  expectedPlayerId: string,
-  expectedAliasId: number,
-) {
-  if (!alias.player.auth?.sessionKey) {
-    return false
-  }
-
-  try {
-    const payload = await verify<{ playerId: string; aliasId: number }>(
-      sessionToken,
-      alias.player.auth.sessionKey,
-    )
-
-    return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
-  } catch {
-    return false
-  }
 }

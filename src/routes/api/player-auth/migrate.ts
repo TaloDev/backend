@@ -6,12 +6,17 @@ import PlayerAuthActivity, {
   PlayerAuthActivityType,
 } from '../../../entities/player-auth-activity.js'
 import PlayerAuth from '../../../entities/player-auth.js'
+import Player from '../../../entities/player.js'
+import { CLAIM_KEY_HEADER, getClaimKey } from '../../../lib/auth/claim-key.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 import { findAliasFromIdentifyRequest } from '../../../lib/players/findAlias.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import {
+  claimKeyHeaderSchema,
+  playerAliasHeaderSchema,
+  playerHeaderSchema,
+} from '../../../lib/validation/playerHeadersSchema.js'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadAliasWithAuth } from './common.js'
@@ -26,6 +31,9 @@ export const migrateRoute = apiRoute({
       'x-talo-player': playerHeaderSchema,
       'x-talo-alias': playerAliasHeaderSchema,
       'x-talo-session': sessionHeaderSchema,
+      [CLAIM_KEY_HEADER]: claimKeyHeaderSchema.meta({
+        description: "Becomes the player's claim key if they do not already have one",
+      }),
     }),
     body: z.object({
       currentPassword: z.string().meta({ description: 'The current password of the player' }),
@@ -45,6 +53,7 @@ export const migrateRoute = apiRoute({
     const em = ctx.em
     const alias = ctx.state.alias
     const key = ctx.state.key
+    const claimKey = getClaimKey(ctx)
 
     assert(alias.player.auth)
 
@@ -79,7 +88,7 @@ export const migrateRoute = apiRoute({
     const oldIdentifier = alias.identifier
 
     await em.transactional(async (trx) => {
-      const trimmedService = service.trim()
+      const trimmedService = service.trim().toLowerCase()
 
       const existingAlias = await findAliasFromIdentifyRequest({
         em: trx,
@@ -116,6 +125,12 @@ export const migrateRoute = apiRoute({
 
       alias.service = trimmedService
       alias.identifier = resolvedIdentifier
+
+      // this call proved ownership with a session and a password, which is what
+      // lets an existing player adopt a key (identify only does it on creation)
+      if (claimKey) {
+        await trx.repo(Player).nativeUpdate({ id: alias.player.id, claimKey: null }, { claimKey })
+      }
     })
 
     return {

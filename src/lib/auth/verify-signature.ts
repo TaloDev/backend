@@ -13,7 +13,7 @@ export async function verifySignature(opts: {
   signature: string
   rawPayload: string
   game: Game
-  aliasId: number
+  aliasId?: number
   em: EntityManager
   redis: Redis
 }): Promise<boolean> {
@@ -93,17 +93,15 @@ export async function verifySignature(opts: {
   }
 
   const tsKey = `verification:ts:${aliasId}`
-  const latestTimestampStr = await redis.get(tsKey)
+  // identify has no alias yet, so it has no sliding window
+  const latestTimestamp = aliasId === undefined ? 0 : Number(await redis.get(tsKey))
 
-  if (latestTimestampStr) {
-    const latestTimestamp = Number(latestTimestampStr)
-    if (latestTimestamp - timestamp > LATEST_TIMESTAMP_WINDOW) {
-      console.warn('verifySignature: timestamp outside sliding window', {
-        timestamp,
-        latestTimestamp,
-      })
-      return false
-    }
+  if (latestTimestamp - timestamp > LATEST_TIMESTAMP_WINDOW) {
+    console.warn('verifySignature: timestamp outside sliding window', {
+      timestamp,
+      latestTimestamp,
+    })
+    return false
   }
 
   if (Math.abs(Date.now() - timestamp) > CURRENT_TIMESTAMP_WINDOW) {
@@ -111,16 +109,24 @@ export async function verifySignature(opts: {
     return false
   }
 
-  const ridKey = `verification:rid:${aliasId}:${rid}`
+  const ridKey = `verification:rid:${game.id}:${aliasId ?? 'aliasless'}:${rid}`
   const ridSet = await redis.set(ridKey, '1', 'EX', REQUEST_TTL, 'NX')
   if (ridSet !== 'OK') {
     console.warn('verifySignature: duplicate RID', { rid })
     return false
   }
 
-  const newLatest = Math.max(Number(latestTimestampStr), timestamp)
-  const cappedLatest = Math.min(newLatest, Date.now())
-  await redis.set(tsKey, cappedLatest, 'EX', REQUEST_TTL)
+  // identify has no alias, so there is no sliding window timestamp to advance
+  if (aliasId === undefined) {
+    return true
+  }
+
+  await redis.set(
+    tsKey,
+    Math.min(Math.max(latestTimestamp, timestamp), Date.now()),
+    'EX',
+    REQUEST_TTL,
+  )
 
   return true
 }

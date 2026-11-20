@@ -4,6 +4,9 @@ import { Context, Next } from 'koa'
 import { isPublicHealthCheck } from '../lib/routing/route-info.js'
 
 const DENYLIST = [
+  'authorization',
+  // the x-talo-claim-key header and claimKey body fields
+  'claim',
   'code',
   'cookie',
   'email',

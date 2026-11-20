@@ -223,7 +223,7 @@ export const refreshDocs = {
 
 export const migrateDocs = {
   description:
-    "Migrate a Talo player account to another service\nThe player's auth details will be removed and they will need to login using the new service and identifier",
+    "Migrate a Talo player account to another service\nThe player's auth details will be removed and they will need to login using the new service and identifier\nSet the `x-talo-claim-key` header to give the player a claim key if they do not already have one.",
   samples: [
     {
       title: 'Sample request',

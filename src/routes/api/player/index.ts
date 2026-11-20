@@ -1,7 +1,7 @@
 import type Router from 'koa-tree-router'
 import { apiRouter } from '../../../lib/routing/router.js'
 import { getRoute } from './get.js'
-import { identifyRoute } from './identify.js'
+import { identifyRoute, claimableIdentifyRoute } from './identify.js'
 import { mergeRoute } from './merge.js'
 import { patchRoute } from './patch.js'
 import { searchRoute } from './search.js'
@@ -15,6 +15,7 @@ export function playerAPIRouter(router: Router, paramRouter: Router) {
     '/v1/players',
     ({ route }) => {
       route(identifyRoute)
+      route(claimableIdentifyRoute)
       route(searchRoute)
       route(mergeRoute)
       route(socketTokenRoute)

@@ -113,7 +113,7 @@ export default class SocketRouter {
           span.setStatus({ code: SpanStatusCode.OK })
         }
       } catch (err) {
-        if (err instanceof ZodError) {
+        if (err instanceof ZodError || err instanceof SyntaxError) {
           sendError({
             conn,
             req: 'unknown',

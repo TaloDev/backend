@@ -1,3 +1,4 @@
+import type { WorkerOptions } from 'bullmq'
 import { EventEmitter } from 'events'
 
 const bullEmitter = new EventEmitter()
@@ -20,12 +21,14 @@ export class Job<T> {
 export class Worker<T> extends EventEmitter {
   queueName: string
   processor: Processor<T>
+  opts: Partial<WorkerOptions>
 
-  constructor(queueName: string, processor: Processor<T>) {
+  constructor(queueName: string, processor: Processor<T>, opts: Partial<WorkerOptions> = {}) {
     super()
 
     this.queueName = queueName
     this.processor = processor
+    this.opts = opts
     bullEmitter.emit('worker-registered', this)
   }
 

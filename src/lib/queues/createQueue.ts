@@ -1,4 +1,4 @@
-import { Job, Processor, Queue, Worker, WorkerOptions } from 'bullmq'
+import { Job, KeepJobs, Processor, Queue, Worker, WorkerOptions } from 'bullmq'
 import { BullMQOtel } from 'bullmq-otel'
 import { createRedisConnection } from '../../config/redis.config.js'
 import handleJobFailure from './handleJobFailure.js'
@@ -9,6 +9,12 @@ export type WorkerEvents<T> = {
 }
 
 let redis: ReturnType<typeof createRedisConnection>
+
+// without these, bullmq keeps every completed/failed job in redis forever,
+// which grows unbounded for frequently-repeating scheduled jobs
+// failed jobs are also persisted to the database by handleJobFailure
+export const defaultRemoveOnComplete: KeepJobs = { age: 24 * 60 * 60, count: 1000 }
+export const defaultRemoveOnFail: KeepJobs = { age: 7 * 24 * 60 * 60, count: 1000 }
 
 function createQueue<T>(
   name: string,
@@ -29,6 +35,8 @@ function createQueue<T>(
 
   const queue = new Queue<T>(name, { connection: redis, telemetry: new BullMQOtel('talo.queue') })
   const worker = new Worker<T>(queue.name, processor, {
+    removeOnComplete: defaultRemoveOnComplete,
+    removeOnFail: defaultRemoveOnFail,
     ...workerOptions,
     connection: redis,
     telemetry: new BullMQOtel('talo.worker'),

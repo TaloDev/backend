@@ -8,6 +8,7 @@ import PlayerAlias from '../../../entities/player-alias.js'
 import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import {
+  applyReservedKeyRule,
   isArrayKey,
   MAX_ARRAY_LENGTH,
   sanitiseProps,
@@ -190,7 +191,8 @@ export const putStorageRoute = apiRoute({
       return ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    const sanitised = sanitiseProps({ props })
+    const { props: allowed, rejected: reservedRejected } = applyReservedKeyRule({ props })
+    const sanitised = sanitiseProps({ props: allowed })
     const { accepted, rejected: profanityRejected } = filterProfaneProps(
       sanitised,
       ctx.state.game.blockPropsProfanity,
@@ -269,7 +271,7 @@ export const putStorageRoute = apiRoute({
         channel,
         upsertedProps,
         deletedProps,
-        failedProps: [...sizeRejected, ...profanityRejected],
+        failedProps: [...reservedRejected, ...sizeRejected, ...profanityRejected],
       },
     }
   },

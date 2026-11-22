@@ -74,7 +74,7 @@ export async function createPlayer(em: EntityManager, game: Game, input: CreateP
   }
 
   if (props) {
-    const { accepted, rejected } = hardSanitiseProps({ props })
+    const { accepted, rejected } = hardSanitiseProps({ props, allowReservedKeys: true })
     if (rejected.length > 0) {
       throw new PlayerCreationError({
         statusCode: 400,

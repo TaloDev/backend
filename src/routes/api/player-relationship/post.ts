@@ -4,7 +4,7 @@ import PlayerAlias from '../../../entities/player-alias.js'
 import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
-import { hardSanitiseProps, rejectReservedProps } from '../../../lib/props/sanitiseProps.js'
+import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
 import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
@@ -26,10 +26,7 @@ export const postRoute = apiRoute({
       relationshipType: relationshipTypeSchema.meta({
         description: 'The type of relationship: "unidirectional" or "bidirectional"',
       }),
-      props: createPropsSchema.optional().meta({
-        description:
-          'An array of @type(Props:prop). When the same key appears twice in one request the last value wins. Keys starting with META_ are reserved and rejected',
-      }),
+      props: createPropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS]), loadAlias),
@@ -62,14 +59,13 @@ export const postRoute = apiRoute({
       return ctx.throw(400, 'Subscription already exists')
     }
 
-    const metaRejected = rejectReservedProps(props)
     const { accepted: sizeAccepted, rejected: sizeRejected } = hardSanitiseProps({ props })
 
     const { accepted, rejected: profanityRejected } = filterProfaneProps(
       sizeAccepted,
       ctx.state.game.blockPropsProfanity,
     )
-    const rejectedProps = [...metaRejected, ...sizeRejected, ...profanityRejected]
+    const rejectedProps = [...sizeRejected, ...profanityRejected]
 
     if (rejectedProps.length > 0) {
       const err = new PropRejectionError(rejectedProps)

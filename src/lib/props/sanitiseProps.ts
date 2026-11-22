@@ -16,10 +16,14 @@ export type RejectedProp = {
 
 export type UnsanitisedProp = { key: string; value: string | null }
 
+type SanitisedProps = { accepted: Prop[]; rejected: RejectedProp[] }
+
 export const MAX_ARRAY_LENGTH = 1000
 
 export const RESERVED_PROP_KEY_MESSAGE =
   "Prop keys starting with 'META_' are reserved for internal systems, please use another key name"
+
+export const RESERVED_PROP_KEY_ERROR: PropRejectionReason = 'PROP_KEY_RESERVED'
 
 export function isReservedPropKey(key: string): boolean {
   return key.startsWith('META_')
@@ -30,9 +34,9 @@ export function isArrayKey(key: string): boolean {
 }
 
 // keeps the last value of a repeated scalar key, array keys are left alone
-export function dedupeScalarProps<T extends UnsanitisedProp>(props: T[]): T[] {
+function dedupeScalarProps(props: UnsanitisedProp[]): UnsanitisedProp[] {
   const seenKeys = new Set<string>()
-  const deduped: T[] = []
+  const deduped: UnsanitisedProp[] = []
 
   for (let i = props.length - 1; i >= 0; i--) {
     const prop = props[i]
@@ -50,28 +54,51 @@ export function dedupeScalarProps<T extends UnsanitisedProp>(props: T[]): T[] {
   return deduped.reverse()
 }
 
-export function rejectReservedProps(props: UnsanitisedProp[]): RejectedProp[] {
-  return props
-    .filter((prop) => isReservedPropKey(prop.key))
-    .map((prop) => ({
+// runs after dedupe so a repeated reserved key is rejected once
+export function applyReservedKeyRule({
+  props,
+  allowReservedKeys = false,
+}: {
+  props: UnsanitisedProp[]
+  allowReservedKeys?: boolean
+}): { props: UnsanitisedProp[]; rejected: RejectedProp[] } {
+  const deduped = dedupeScalarProps(props)
+
+  if (allowReservedKeys) {
+    return { props: deduped, rejected: [] }
+  }
+
+  const rejected: RejectedProp[] = []
+  const allowed = deduped.filter((prop) => {
+    if (!isReservedPropKey(prop.key)) {
+      return true
+    }
+
+    rejected.push({
       key: prop.key,
-      error: 'PROP_KEY_RESERVED',
+      error: RESERVED_PROP_KEY_ERROR,
       message: RESERVED_PROP_KEY_MESSAGE,
-    }))
+    })
+
+    return false
+  })
+
+  return { props: allowed, rejected }
 }
 
 export function mergeAndSanitiseProps({
   prevProps,
   newProps,
-  extraFilter,
   valueLimit,
 }: {
   prevProps: Prop[]
   newProps: UnsanitisedProp[]
-  extraFilter?: (prop: UnsanitisedProp) => boolean
   valueLimit?: number
-}): { accepted: Prop[]; rejected: RejectedProp[] } {
-  const sanitisedNew = sanitiseProps({ props: newProps, deleteNull: false, extraFilter })
+}): SanitisedProps {
+  const { props: allowed, rejected: reservedRejected } = applyReservedKeyRule({
+    props: newProps,
+  })
+  const sanitisedNew = sanitiseProps({ props: allowed, deleteNull: false })
 
   // scalar properties - simple strings
   const prevScalar = prevProps.filter((p) => !isArrayKey(p.key))
@@ -112,9 +139,10 @@ export function mergeAndSanitiseProps({
   const { accepted: hardAccepted, rejected: hardRejected } = hardSanitiseProps({
     props: [...mergedScalar, ...filteredMergedArray],
     valueLimit,
+    allowReservedKeys: true,
   })
 
-  return { accepted: hardAccepted, rejected: [...rejected, ...hardRejected] }
+  return { accepted: hardAccepted, rejected: [...reservedRejected, ...rejected, ...hardRejected] }
 }
 
 // applies changes in order so later changes to the same key win
@@ -215,15 +243,23 @@ export function hardSanitiseProps({
   props,
   extraFilter,
   valueLimit,
+  allowReservedKeys = false,
 }: {
   props: UnsanitisedProp[]
   extraFilter?: (prop: UnsanitisedProp) => boolean
   valueLimit?: number
-}): { accepted: Prop[]; rejected: RejectedProp[] } {
+  // integrations write META_ keys themselves
+  allowReservedKeys?: boolean
+}): SanitisedProps {
+  const { props: candidates, rejected: reservedRejected } = applyReservedKeyRule({
+    props,
+    allowReservedKeys,
+  })
+
   const rejected: RejectedProp[] = []
   const accepted: Prop[] = []
 
-  sanitiseProps({ props, deleteNull: true, extraFilter }).forEach((prop) => {
+  sanitiseProps({ props: candidates, deleteNull: true, extraFilter }).forEach((prop) => {
     const sizeRejection = testPropSize({ key: prop.key, value: prop.value, valueLimit })
     if (sizeRejection) {
       rejected.push(sizeRejection)
@@ -232,5 +268,5 @@ export function hardSanitiseProps({
     }
   })
 
-  return { accepted, rejected }
+  return { accepted, rejected: [...reservedRejected, ...rejected] }
 }

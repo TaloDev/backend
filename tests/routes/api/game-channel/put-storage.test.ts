@@ -145,6 +145,29 @@ describe('Game channel API - update storage', () => {
     expect(res.body.failedProps[0].error).toBe('PROP_KEY_TOO_LONG')
   })
 
+  it('should reject props with reserved keys', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({ props: [{ key: 'META_internal', value: '1' }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(0)
+    expect(res.body.failedProps).toHaveLength(1)
+    expect(res.body.failedProps[0].error).toBe('PROP_KEY_RESERVED')
+
+    const props = await em.repo(GameChannelStorageProp).find({ gameChannel: channel })
+    expect(props).toHaveLength(0)
+  })
+
   it('should reject props where the value is greater than 512 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 

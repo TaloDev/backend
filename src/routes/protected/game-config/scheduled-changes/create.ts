@@ -4,13 +4,8 @@ import { GameActivityType } from '../../../../entities/game-activity.js'
 import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../../../../entities/game.js'
 import ScheduledGameConfigChange from '../../../../entities/scheduled-game-config-change.js'
 import User, { UserType } from '../../../../entities/user.js'
-import { buildErrorResponse } from '../../../../lib/errors/buildErrorResponse.js'
 import createGameActivity from '../../../../lib/logging/createGameActivity.js'
-import {
-  applyPropsInOrder,
-  isReservedPropKey,
-  RESERVED_PROP_KEY_MESSAGE,
-} from '../../../../lib/props/sanitiseProps.js'
+import { applyPropsInOrder } from '../../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../../lib/routing/router.js'
 import { loadGame } from '../../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../../middleware/policy-middleware.js'
@@ -18,12 +13,9 @@ import {
   createScheduledGameConfigChangesBodySchema,
   ScheduledGameConfigChangesData,
 } from '../../../schemas/game-config/createScheduledGameConfigChangesBodySchema.js'
+import { buildPropsError } from '../common.js'
 
 function validateChanges(game: Game, data: ScheduledGameConfigChangesData) {
-  if (data.changes.some((change) => isReservedPropKey(change.key))) {
-    return buildErrorResponse({ props: [RESERVED_PROP_KEY_MESSAGE] })
-  }
-
   // mirror the scheduled task so changes that would be rejected at apply time fail here instead
   const orderedChanges = [...data.changes].sort(
     (a, b) => new Date(a.applyAt).getTime() - new Date(b.applyAt).getTime(),
@@ -35,14 +27,7 @@ function validateChanges(game: Game, data: ScheduledGameConfigChangesData) {
     valueLimit: MAX_LIVE_CONFIG_VALUE_LENGTH,
   })
 
-  if (rejected.length > 0) {
-    return buildErrorResponse(
-      { props: ['One or more props are invalid, see rejectedProps'] },
-      { rejectedProps: rejected.flatMap((result) => result.reasons) },
-    )
-  }
-
-  return null
+  return buildPropsError(rejected.flatMap((result) => result.reasons))
 }
 
 export async function createScheduledGameConfigChangesHandler({

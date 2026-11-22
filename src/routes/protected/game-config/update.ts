@@ -4,20 +4,15 @@ import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../../../entities/game.js'
 import User, { UserType } from '../../../entities/user.js'
-import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
-import {
-  isReservedPropKey,
-  mergeAndSanitiseProps,
-  RESERVED_PROP_KEY_MESSAGE,
-  sanitiseProps,
-} from '../../../lib/props/sanitiseProps.js'
+import { mergeAndSanitiseProps, sanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 import Socket from '../../../socket/index.js'
 import { updateGameConfigBodySchema } from '../../schemas/game-config/updateGameConfigBodySchema.js'
+import { buildPropsError } from './common.js'
 
 export async function updateGameConfigHandler({
   em,
@@ -32,21 +27,15 @@ export async function updateGameConfigHandler({
   props: z.infer<typeof updatePropsSchema>
   wss: Socket
 }) {
-  if (props.some((prop) => isReservedPropKey(prop.key))) {
-    return buildErrorResponse({ props: [RESERVED_PROP_KEY_MESSAGE] })
-  }
-
   const { accepted, rejected } = mergeAndSanitiseProps({
     prevProps: game.props,
     newProps: props,
     valueLimit: MAX_LIVE_CONFIG_VALUE_LENGTH,
   })
 
-  if (rejected.length > 0) {
-    return buildErrorResponse(
-      { props: ['One or more props are invalid, see rejectedProps'] },
-      { rejectedProps: rejected },
-    )
+  const propsError = buildPropsError(rejected)
+  if (propsError) {
+    return propsError
   }
 
   game.props = accepted

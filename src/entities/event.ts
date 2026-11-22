@@ -113,6 +113,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
   setProps(props: Prop[]) {
     const { accepted, rejected } = hardSanitiseProps({
       props,
+      allowReservedKeys: true,
       extraFilter: (prop) => {
         return !prop.key.startsWith('META_') || eventMetaProps.includes(prop.key)
       },

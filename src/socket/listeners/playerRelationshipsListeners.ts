@@ -23,8 +23,8 @@ const playerRelationshipsListeners = [
         confirmed: true,
       }
 
-      // a missing or empty list means send to every confirmed subscriber
-      if (data.aliasIds?.length) {
+      // a missing or null list means every confirmed subscriber, an empty list means nobody
+      if (data.aliasIds != null) {
         where.subscriber = { id: { $in: data.aliasIds } }
       }
 

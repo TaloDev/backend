@@ -1,9 +1,25 @@
 import { Next } from 'koa'
-import { verifySignature } from '../lib/auth/verify-signature.js'
+import { SignatureNamespace, verifySignature } from '../lib/auth/verify-signature.js'
 import { APIRouteContext } from '../lib/routing/context.js'
 
 function isClaimableIdentifyRequest(ctx: APIRouteContext) {
   return ctx.method === 'POST' && ctx.path === '/v1/players/identify'
+}
+
+function resolveNamespace(ctx: APIRouteContext): SignatureNamespace | undefined {
+  if (isClaimableIdentifyRequest(ctx)) {
+    return SignatureNamespace.unidentified()
+  }
+
+  if (ctx.state.currentAliasId !== undefined) {
+    return SignatureNamespace.alias(ctx.state.currentAliasId)
+  }
+
+  if (ctx.state.currentPlayerId) {
+    return SignatureNamespace.player(ctx.state.currentPlayerId)
+  }
+
+  return undefined
 }
 
 export async function signatureMiddleware(ctx: APIRouteContext, next: Next) {
@@ -11,26 +27,24 @@ export async function signatureMiddleware(ctx: APIRouteContext, next: Next) {
     return next()
   }
 
-  const isIdentify = isClaimableIdentifyRequest(ctx)
-  // if identifying, ignore any alias headers (if they exist)
-  const aliasId = isIdentify ? undefined : ctx.state.currentAliasId
+  const namespace = resolveNamespace(ctx)
 
-  // only verify claimable identify requests or ones with an alias
-  if (!isIdentify && aliasId === undefined) {
+  // socket tickets and auth register carry no player or alias
+  if (!namespace) {
     return next()
   }
 
   const signature = ctx.headers['x-talo-signature']
   if (typeof signature !== 'string') {
-    console.warn('signatureMiddleware: missing signature', { aliasId })
+    console.warn('signatureMiddleware: missing signature', { namespace })
     return ctx.throw(401)
   }
 
   const valid = await verifySignature({
     signature,
-    rawPayload: ctx.request.rawBody,
+    rawPayload: ctx.request.rawBody ?? '',
     game: ctx.state.game,
-    aliasId,
+    namespace,
     em: ctx.em,
     redis: ctx.redis,
   })

@@ -5,7 +5,7 @@ import { RawData } from 'ws'
 import { z, ZodError, ZodType } from 'zod'
 import { APIKeyScope } from '../../entities/api-key.js'
 import Game from '../../entities/game.js'
-import { verifySignature } from '../../lib/auth/verify-signature.js'
+import { SignatureNamespace, verifySignature } from '../../lib/auth/verify-signature.js'
 import Socket from '../index.js'
 import gameChannelListeners from '../listeners/gameChannelListeners.js'
 import playerListeners from '../listeners/playerListeners.js'
@@ -274,7 +274,7 @@ export default class SocketRouter {
       signature,
       rawPayload,
       game,
-      aliasId: conn.playerAliasId,
+      namespace: SignatureNamespace.alias(conn.playerAliasId),
       em,
       redis: this.wss.redis,
     })

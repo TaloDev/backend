@@ -9,15 +9,42 @@ const LATEST_TIMESTAMP_WINDOW = 60_000
 const CURRENT_TIMESTAMP_WINDOW = 300_000
 const REQUEST_TTL = 600
 
+export type SignatureNamespace =
+  | { kind: 'unidentified' }
+  | { kind: 'alias'; aliasId: number }
+  | { kind: 'player'; playerId: string }
+
+export const SignatureNamespace = {
+  unidentified(): SignatureNamespace {
+    return { kind: 'unidentified' }
+  },
+  alias(aliasId: number): SignatureNamespace {
+    return { kind: 'alias', aliasId }
+  },
+  player(playerId: string): SignatureNamespace {
+    return { kind: 'player', playerId }
+  },
+  key(namespace: SignatureNamespace) {
+    switch (namespace.kind) {
+      case 'alias':
+        return `alias:${namespace.aliasId}`
+      case 'player':
+        return `player:${namespace.playerId}`
+      default:
+        return 'unidentified'
+    }
+  },
+}
+
 export async function verifySignature(opts: {
   signature: string
   rawPayload?: string
   game: Game
-  aliasId?: number
+  namespace: SignatureNamespace
   em: EntityManager
   redis: Redis
 }): Promise<boolean> {
-  const { signature, rawPayload = '', game, aliasId, em, redis } = opts
+  const { signature, rawPayload = '', game, namespace, em, redis } = opts
 
   if (signature.length === 0) {
     console.warn('verifySignature: missing signature')
@@ -92,9 +119,9 @@ export async function verifySignature(opts: {
     return false
   }
 
-  const tsKey = `verification:ts:${aliasId}`
+  const tsKey = `verification:ts:${SignatureNamespace.key(namespace)}`
   // identify has no alias yet, so it has no sliding window
-  const latestTimestamp = aliasId === undefined ? 0 : Number(await redis.get(tsKey))
+  const latestTimestamp = namespace.kind === 'unidentified' ? 0 : Number(await redis.get(tsKey))
 
   if (latestTimestamp - timestamp > LATEST_TIMESTAMP_WINDOW) {
     console.warn('verifySignature: timestamp outside sliding window', {
@@ -109,7 +136,8 @@ export async function verifySignature(opts: {
     return false
   }
 
-  const ridKey = `verification:rid:${game.id}:${aliasId ?? 'aliasless'}:${rid}`
+  // no namespace: a body signed for an alias must not replay under a player
+  const ridKey = `verification:rid:${game.id}:${rid}`
   const ridSet = await redis.set(ridKey, '1', 'EX', REQUEST_TTL, 'NX')
   if (ridSet !== 'OK') {
     console.warn('verifySignature: duplicate RID', { rid })
@@ -117,7 +145,7 @@ export async function verifySignature(opts: {
   }
 
   // identify has no alias, so there is no sliding window timestamp to advance
-  if (aliasId === undefined) {
+  if (namespace.kind === 'unidentified') {
     return true
   }
 

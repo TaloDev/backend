@@ -4,7 +4,7 @@ import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
-import { mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
+import { mergeAndSanitiseProps, rejectReservedProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
@@ -27,7 +27,7 @@ export const patchRoute = apiRoute({
     body: z.object({
       props: updatePropsSchema.optional().meta({
         description:
-          "An array of @type(Props:prop). Props that the subscription doesn't have will be added. Props with updated values will overwrite existing props. Props with a null value will be deleted",
+          "An array of @type(Props:prop). Props that the subscription doesn't have will be added. Props with updated values will overwrite existing props. Props with a null value will be deleted. When the same key appears twice in one request the last value wins. Keys starting with META_ are reserved and rejected",
       }),
     }),
   }),
@@ -60,6 +60,7 @@ export const patchRoute = apiRoute({
         () =>
           em.transactional(async (trx) => {
             const lockedSubscription = await trx.refreshOrFail(subscription)
+            const metaRejected = rejectReservedProps(props)
 
             const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
               prevProps: lockedSubscription.props.getItems(),
@@ -71,7 +72,7 @@ export const patchRoute = apiRoute({
               ctx.state.game.blockPropsProfanity,
             )
 
-            const allRejected = [...sizeRejected, ...profanityRejected]
+            const allRejected = [...metaRejected, ...sizeRejected, ...profanityRejected]
             if (allRejected.length > 0) {
               throw new PropRejectionError(allRejected)
             }

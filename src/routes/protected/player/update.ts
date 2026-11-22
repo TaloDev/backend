@@ -10,7 +10,7 @@ import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import {
   isReservedPropKey,
   mergeAndSanitiseProps,
-  RESERVED_PROP_KEY_MESSAGE,
+  rejectReservedProps,
   sanitiseProps,
 } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -46,15 +46,7 @@ export async function updatePlayerHandler({
         let rejectedProps: RejectedProp[] = []
 
         if (props) {
-          const metaRejected: RejectedProp[] = !forwarded
-            ? props
-                .filter((prop) => isReservedPropKey(prop.key))
-                .map((prop) => ({
-                  key: prop.key,
-                  error: 'PROP_KEY_RESERVED',
-                  message: RESERVED_PROP_KEY_MESSAGE,
-                }))
-            : []
+          const metaRejected: RejectedProp[] = forwarded ? [] : rejectReservedProps(props)
 
           const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
             prevProps: lockedPlayer.props.getItems(),

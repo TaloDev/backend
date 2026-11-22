@@ -1,9 +1,26 @@
 import Prop from '../../../src/entities/prop.js'
-import { MAX_ARRAY_LENGTH, mergeAndSanitiseProps } from '../../../src/lib/props/sanitiseProps.js'
+import {
+  MAX_ARRAY_LENGTH,
+  mergeAndSanitiseProps,
+  sanitiseProps,
+} from '../../../src/lib/props/sanitiseProps.js'
 
 function makeProp(key: string, value: string) {
   return new Prop(key, value)
 }
+
+describe('sanitiseProps', () => {
+  it('should keep every value of a repeated array key', () => {
+    const props = sanitiseProps({
+      props: [
+        { key: 'tags[]', value: 'a' },
+        { key: 'tags[]', value: 'b' },
+      ],
+    })
+
+    expect(props).toHaveLength(2)
+  })
+})
 
 describe('mergeAndSanitiseProps', () => {
   describe('scalar keys', () => {
@@ -42,6 +59,31 @@ describe('mergeAndSanitiseProps', () => {
       const { accepted } = mergeAndSanitiseProps({
         prevProps: [makeProp('foo', 'bar')],
         newProps: [{ key: 'foo', value: null }],
+      })
+
+      expect(accepted).toHaveLength(0)
+    })
+
+    it('should keep the last value of a repeated scalar key', () => {
+      const { accepted } = mergeAndSanitiseProps({
+        prevProps: [],
+        newProps: [
+          { key: 'foo', value: 'first' },
+          { key: 'foo', value: 'last' },
+        ],
+      })
+
+      expect(accepted).toHaveLength(1)
+      expect(accepted[0]).toMatchObject({ key: 'foo', value: 'last' })
+    })
+
+    it('should delete a scalar prop when its last value is null', () => {
+      const { accepted } = mergeAndSanitiseProps({
+        prevProps: [makeProp('foo', 'bar')],
+        newProps: [
+          { key: 'foo', value: 'value' },
+          { key: 'foo', value: null },
+        ],
       })
 
       expect(accepted).toHaveLength(0)

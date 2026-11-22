@@ -29,6 +29,37 @@ export function isArrayKey(key: string): boolean {
   return key.endsWith('[]')
 }
 
+// keeps the last value of a repeated scalar key, array keys are left alone
+export function dedupeScalarProps<T extends UnsanitisedProp>(props: T[]): T[] {
+  const seenKeys = new Set<string>()
+  const deduped: T[] = []
+
+  for (let i = props.length - 1; i >= 0; i--) {
+    const prop = props[i]
+
+    if (!isArrayKey(prop.key)) {
+      if (seenKeys.has(prop.key)) {
+        continue
+      }
+      seenKeys.add(prop.key)
+    }
+
+    deduped.push(prop)
+  }
+
+  return deduped.reverse()
+}
+
+export function rejectReservedProps(props: UnsanitisedProp[]): RejectedProp[] {
+  return props
+    .filter((prop) => isReservedPropKey(prop.key))
+    .map((prop) => ({
+      key: prop.key,
+      error: 'PROP_KEY_RESERVED',
+      message: RESERVED_PROP_KEY_MESSAGE,
+    }))
+}
+
 export function mergeAndSanitiseProps({
   prevProps,
   newProps,
@@ -133,7 +164,11 @@ export function sanitiseProps({
   deleteNull?: boolean
   extraFilter?: (prop: UnsanitisedProp) => boolean
 }): UnsanitisedProp[] {
-  if (deleteNull) props = props.filter((prop) => prop.value !== null)
+  props = dedupeScalarProps(props)
+
+  if (deleteNull) {
+    props = props.filter((prop) => prop.value !== null)
+  }
 
   return props
     .filter((prop) => {

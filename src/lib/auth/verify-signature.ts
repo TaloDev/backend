@@ -11,13 +11,13 @@ const REQUEST_TTL = 600
 
 export async function verifySignature(opts: {
   signature: string
-  rawPayload: string
+  rawPayload?: string
   game: Game
   aliasId: number
   em: EntityManager
   redis: Redis
 }): Promise<boolean> {
-  const { signature, rawPayload, game, aliasId, em, redis } = opts
+  const { signature, rawPayload = '', game, aliasId, em, redis } = opts
 
   if (signature.length === 0) {
     console.warn('verifySignature: missing signature')

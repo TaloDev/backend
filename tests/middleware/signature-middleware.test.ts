@@ -109,6 +109,24 @@ describe('Signature middleware', () => {
       .expect(401)
   })
 
+  it('should accept a valid signature over an empty payload', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist([player, verificationKey]).flush()
+
+    const sig = buildSignature('', 'test-verification-key-1', '1')
+
+    await request(app)
+      .post('/v1/players/socket-token')
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-signature', sig)
+      .expect(200)
+  })
+
   it('should return 401 for a replayed request id', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     apiKey.game.verifyRequests = true

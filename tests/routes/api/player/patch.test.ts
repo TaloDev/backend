@@ -295,6 +295,38 @@ describe('Player API - update', () => {
     )
   })
 
+  it('should not reject a META_ prop the player already has with the same value', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, DEV_BUILD_META_KEY, '1'),
+        ]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          { key: DEV_BUILD_META_KEY, value: '1' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.rejectedProps).toHaveLength(0)
+    expect(res.body.player.props).toEqual(
+      expect.arrayContaining([
+        { key: DEV_BUILD_META_KEY, value: '1' },
+        { key: 'level', value: '5' },
+      ]),
+    )
+  })
+
   it('should skip checkGroupMemberships when the checkMembership redis lock is already held', async () => {
     const isPlayerEligibleSpy = vi
       .spyOn(PlayerGroup.prototype, 'isPlayerEligible')

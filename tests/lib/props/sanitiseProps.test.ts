@@ -254,13 +254,28 @@ describe('mergeAndSanitiseProps', () => {
     })
 
     it('should not overwrite a stored META_ prop', () => {
-      const { accepted } = mergeAndSanitiseProps({
+      const { accepted, rejected } = mergeAndSanitiseProps({
         prevProps: [makeProp('META_DEV_BUILD', '1')],
         newProps: [{ key: 'META_DEV_BUILD', value: '0' }],
       })
 
       expect(accepted).toHaveLength(1)
       expect(accepted[0]).toMatchObject({ key: 'META_DEV_BUILD', value: '1' })
+      expect(rejected).toHaveLength(1)
+    })
+
+    it('should ignore a reserved prop that keeps its stored value', () => {
+      const { accepted, rejected } = mergeAndSanitiseProps({
+        prevProps: [makeProp('META_DEV_BUILD', '1')],
+        newProps: [
+          { key: 'META_DEV_BUILD', value: '1' },
+          { key: 'level', value: '5' },
+        ],
+      })
+
+      expect(accepted).toHaveLength(2)
+      expect(accepted.find((p) => p.key === 'level')?.value).toBe('5')
+      expect(rejected).toHaveLength(0)
     })
 
     it('should allow META_ props from a trusted source', () => {

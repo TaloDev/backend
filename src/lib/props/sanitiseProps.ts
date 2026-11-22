@@ -54,12 +54,14 @@ function dedupeScalarProps(props: UnsanitisedProp[]): UnsanitisedProp[] {
   return deduped.reverse()
 }
 
-// runs after dedupe so a repeated reserved key is rejected once
+// an unchanged reserved key passes, and a repeated key is reported once
 export function applyReservedKeyRule({
   props,
+  prevProps = [],
   allowReservedKeys = false,
 }: {
   props: UnsanitisedProp[]
+  prevProps?: Prop[]
   allowReservedKeys?: boolean
 }): { props: UnsanitisedProp[]; rejected: RejectedProp[] } {
   const deduped = dedupeScalarProps(props)
@@ -68,10 +70,18 @@ export function applyReservedKeyRule({
     return { props: deduped, rejected: [] }
   }
 
+  const storedValues = new Map(
+    prevProps.filter((prop) => !isArrayKey(prop.key)).map((prop) => [prop.key, prop.value]),
+  )
+
   const rejected: RejectedProp[] = []
   const allowed = deduped.filter((prop) => {
     if (!isReservedPropKey(prop.key)) {
       return true
+    }
+
+    if (!isArrayKey(prop.key) && storedValues.get(prop.key) === prop.value) {
+      return false
     }
 
     rejected.push({
@@ -97,6 +107,7 @@ export function mergeAndSanitiseProps({
 }): SanitisedProps {
   const { props: allowed, rejected: reservedRejected } = applyReservedKeyRule({
     props: newProps,
+    prevProps,
   })
   const sanitisedNew = sanitiseProps({ props: allowed, deleteNull: false })
 

@@ -64,7 +64,7 @@ async function fetchPropKeys(
       e.name AS name,
       groupUniqArray(p.prop_key) AS prop_keys
     FROM event_props p
-    INNER JOIN events e ON e.id = p.event_id
+    INNER JOIN events e ON e.id = p.event_id AND e.game_id = {gameId:UInt32}
     WHERE p.game_id = {gameId:UInt32}
   `
 

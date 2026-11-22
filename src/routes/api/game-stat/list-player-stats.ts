@@ -2,7 +2,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
 import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { listPlayerStatsDocs } from './docs.js'
@@ -11,10 +11,8 @@ export const listPlayerStatsRoute = apiRoute({
   method: 'get',
   path: '/player-stats',
   docs: listPlayerStatsDocs,
-  schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+  schema: () => ({
+    headers: playerAliasHeaders,
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_GAME_STATS]), loadAlias),
   handler: async (ctx) => {

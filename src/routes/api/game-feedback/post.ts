@@ -5,7 +5,7 @@ import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -17,9 +17,7 @@ export const postRoute = apiRoute({
   path: '/categories/:internalName',
   docs: postDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       comment: z.string().min(1).max(5000).meta({ description: 'The comment made by the player' }),
       props: createPropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' }),

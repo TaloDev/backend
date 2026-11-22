@@ -6,7 +6,7 @@ import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
 import { pageSchema } from '../../../lib/validation/pageSchema.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadChannel } from './common.js'
@@ -20,9 +20,7 @@ export const membersRoute = apiRoute({
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     query: z.object({
       page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),
       playerId: z.uuid().optional().meta({ description: 'Filter members by this player ID' }),

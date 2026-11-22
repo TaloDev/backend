@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { APIKeyScope } from '../../../src/entities/api-key.js'
-import { verifySignature } from '../../../src/lib/auth/verify-signature.js'
+import { SignatureNamespace, verifySignature } from '../../../src/lib/auth/verify-signature.js'
 import PlayerFactory from '../../fixtures/PlayerFactory.js'
 import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken.js'
 import { createEncryptedKey, buildSignature } from '../../utils/signatureHelpers.js'
@@ -15,7 +15,7 @@ describe('verifySignature', () => {
       signature: '',
       rawPayload: '{}',
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -32,7 +32,7 @@ describe('verifySignature', () => {
       signature: 'just-a-string-without-pipe',
       rawPayload: '{}',
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -49,7 +49,7 @@ describe('verifySignature', () => {
       signature: '1|no-dot',
       rawPayload: '{}',
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -69,7 +69,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -91,7 +91,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -112,7 +112,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: JSON.stringify({ change: 1 }),
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -135,7 +135,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -145,7 +145,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -168,7 +168,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -194,7 +194,7 @@ describe('verifySignature', () => {
       signature: `1|${invalidJsonB64}.${sigB64}`,
       rawPayload: JSON.stringify({ change: 1 }),
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -216,7 +216,7 @@ describe('verifySignature', () => {
       signature: sig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -242,7 +242,7 @@ describe('verifySignature', () => {
       signature: firstSig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -256,7 +256,7 @@ describe('verifySignature', () => {
       signature: secondSig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -282,7 +282,7 @@ describe('verifySignature', () => {
       signature: futureSig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -297,7 +297,7 @@ describe('verifySignature', () => {
       signature: normalSig,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -322,7 +322,7 @@ describe('verifySignature', () => {
       signature: sig1,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })
@@ -336,7 +336,7 @@ describe('verifySignature', () => {
       signature: sig2,
       rawPayload: body,
       game: apiKey.game,
-      aliasId: player.aliases[0].id,
+      namespace: SignatureNamespace.alias(player.aliases[0].id),
       em,
       redis,
     })

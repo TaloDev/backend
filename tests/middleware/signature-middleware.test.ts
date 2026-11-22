@@ -229,6 +229,159 @@ describe('Signature middleware', () => {
       .expect(401)
   })
 
+  it('should return 401 when only the player header is set and the signature is missing', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(401)
+  })
+
+  it('should accept a valid signature when only the player header is set', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist([player, verificationKey]).flush()
+
+    const sig = buildSignature(
+      JSON.stringify({ name: 'save', content: {} }),
+      'test-verification-key-1',
+      '1',
+    )
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-signature', sig)
+      .expect(200)
+  })
+
+  it('should return 401 for a replayed request id on a player request', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist([player, verificationKey]).flush()
+
+    const sig = buildSignature(
+      JSON.stringify({ name: 'save', content: {} }),
+      'test-verification-key-1',
+      '1',
+      {
+        rid: crypto.randomUUID(),
+      },
+    )
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-signature', sig)
+      .expect(200)
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-signature', sig)
+      .expect(401)
+  })
+
+  it('should return 401 when a request id is reused across namespaces', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist([player, verificationKey]).flush()
+
+    const sig = buildSignature(
+      JSON.stringify({ name: 'save', content: {} }),
+      'test-verification-key-1',
+      '1',
+      {
+        rid: crypto.randomUUID(),
+      },
+    )
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-signature', sig)
+      .expect(200)
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-signature', sig)
+      .expect(401)
+  })
+
+  it('should return 401 for a player request outside the sliding window', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist([player, verificationKey]).flush()
+
+    const now = Date.now()
+    const firstSig = buildSignature(
+      JSON.stringify({ name: 'save', content: {} }),
+      'test-verification-key-1',
+      '1',
+      {
+        timestamp: now,
+        rid: crypto.randomUUID(),
+      },
+    )
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-signature', firstSig)
+      .expect(200)
+
+    const secondSig = buildSignature(
+      JSON.stringify({ name: 'save', content: {} }),
+      'test-verification-key-1',
+      '1',
+      {
+        timestamp: now - 61_000,
+        rid: crypto.randomUUID(),
+      },
+    )
+
+    await request(app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-signature', secondSig)
+      .expect(401)
+  })
+
   it('should skip verification for legacy identify requests', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     apiKey.game.verifyRequests = true

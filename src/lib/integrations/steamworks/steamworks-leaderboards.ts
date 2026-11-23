@@ -12,12 +12,15 @@ import { getResultCacheOptions } from '../../perf/getResultCacheOptions.js'
 import { streamByCursor } from '../../perf/streamByCursor.js'
 import {
   FindOrCreateLeaderboardResponse,
+  getSteamResultCode,
   GetLeaderboardEntriesResponse,
   GetLeaderboardEntriesResponseEntry,
   GetLeaderboardsForGameResponse,
   GetLeaderboardsForGameResponseLeaderboard,
+  STEAM_RESULT_OK,
   SteamworksClient,
   SteamworksNetworkError,
+  SteamworksResultError,
 } from '../clients/steamworks-client.js'
 
 type CombinedLeaderboards = [
@@ -100,7 +103,7 @@ export async function createSteamworksLeaderboardEntry(
     })
 
     const client = new SteamworksClient(integration)
-    const { event, success } = await client.makeRequest({
+    const { res, event, success } = await client.makeRequest({
       method: 'POST',
       url: '/ISteamLeaderboards/SetLeaderboardScore/v1',
       body,
@@ -109,6 +112,11 @@ export async function createSteamworksLeaderboardEntry(
 
     if (!success) {
       throw new SteamworksNetworkError()
+    }
+
+    const resultCode = getSteamResultCode(res?.data)
+    if (resultCode !== STEAM_RESULT_OK) {
+      throw new SteamworksResultError(resultCode, res?.status ?? 0)
     }
 
     await em.upsert(

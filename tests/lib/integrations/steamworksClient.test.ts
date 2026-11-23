@@ -1,5 +1,8 @@
 import { IntegrationType } from '../../../src/entities/integration.js'
-import { SteamworksClient } from '../../../src/lib/integrations/clients/steamworks-client.js'
+import {
+  SteamworksClient,
+  getSteamResultCode,
+} from '../../../src/lib/integrations/clients/steamworks-client.js'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
 import createAxiosMock from '../../utils/createAxiosMock.js'
@@ -213,5 +216,31 @@ describe('SteamworksClient - retry mechanism', () => {
     expect(callCount).toBe(2)
     expect(successMock).toHaveBeenCalledTimes(1)
     expect(res?.status).toBe(200)
+  })
+})
+
+describe('getSteamResultCode', () => {
+  it('should read the result from the result wrapper', () => {
+    expect(getSteamResultCode({ result: { result: 1, score_changed: true } })).toBe(1)
+    expect(getSteamResultCode({ result: { result: 33 } })).toBe(33)
+  })
+
+  it('should read the result from the response wrapper', () => {
+    expect(getSteamResultCode({ response: { result: 1, leaderboards: [] } })).toBe(1)
+    expect(getSteamResultCode({ response: { result: 8, error: 'Invalid stat name' } })).toBe(8)
+  })
+
+  it('should return null when the response carries no result code', () => {
+    expect(
+      getSteamResultCode({ response: { params: { result: 'OK', steamid: '76561197960265728' } } }),
+    ).toBeNull()
+    expect(
+      getSteamResultCode({ leaderboardEntryInformation: { leaderboardEntries: [] } }),
+    ).toBeNull()
+    expect(getSteamResultCode({ appownership: { result: 'OK', ownsapp: true } })).toBeNull()
+    expect(getSteamResultCode({ response: { players: [] } })).toBeNull()
+    expect(getSteamResultCode('<html><head><title>Forbidden</title></head></html>')).toBeNull()
+    expect(getSteamResultCode(null)).toBeNull()
+    expect(getSteamResultCode(undefined)).toBeNull()
   })
 })

@@ -534,6 +534,92 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(steamworksEntry).toBeTruthy()
   })
 
+  it('should not save a steamworks entry when steamworks rejects the score', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
+    await em.persist([leaderboard, mapping, player, entry, integration]).flush()
+
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
+      )
+      .replyOnce(() => [
+        200,
+        {
+          response: {
+            result: 1,
+            leaderboards: [
+              {
+                id: mapping.steamworksLeaderboardId,
+                name: 'Quickest Win',
+                entries: 0,
+                sortmethod: 'Ascending',
+                displaytype: 'Numeric',
+                onlytrustedwrites: false,
+                onlyfriendsreads: false,
+              },
+            ],
+          },
+        },
+      ])
+
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+      )
+      .replyOnce(() => [
+        200,
+        {
+          leaderboardEntryInformation: {
+            appID: 375290,
+            leaderboardID: mapping.steamworksLeaderboardId,
+            totalLeaderBoardEntryCount: 0,
+            leaderboardEntries: [],
+          },
+        },
+      ])
+
+    const createMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 33,
+          score_changed: false,
+          global_rank_new: 0,
+          global_rank_previous: 0,
+          leaderboard_entry_count: 0,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1')
+      .replyOnce(createMock)
+
+    await syncSteamworksLeaderboards(em, integration)
+
+    expect(createMock).toHaveBeenCalledTimes(1)
+
+    const steamworksEntry = await em
+      .repo(SteamworksLeaderboardEntry)
+      .findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeNull()
+  })
+
   it('should continue to push through entries from talo into steamworks even if some fail', async () => {
     const [, game] = await createOrganisationAndGame()
 

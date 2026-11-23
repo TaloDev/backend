@@ -1,9 +1,28 @@
 import Prop from '../../../src/entities/prop.js'
-import { MAX_ARRAY_LENGTH, mergeAndSanitiseProps } from '../../../src/lib/props/sanitiseProps.js'
+import {
+  hardSanitiseProps,
+  MAX_ARRAY_LENGTH,
+  mergeAndSanitiseProps,
+  RESERVED_PROP_KEY_MESSAGE,
+  sanitiseProps,
+} from '../../../src/lib/props/sanitiseProps.js'
 
 function makeProp(key: string, value: string) {
   return new Prop(key, value)
 }
+
+describe('sanitiseProps', () => {
+  it('should keep every value of a repeated array key', () => {
+    const props = sanitiseProps({
+      props: [
+        { key: 'tags[]', value: 'a' },
+        { key: 'tags[]', value: 'b' },
+      ],
+    })
+
+    expect(props).toHaveLength(2)
+  })
+})
 
 describe('mergeAndSanitiseProps', () => {
   describe('scalar keys', () => {
@@ -42,6 +61,31 @@ describe('mergeAndSanitiseProps', () => {
       const { accepted } = mergeAndSanitiseProps({
         prevProps: [makeProp('foo', 'bar')],
         newProps: [{ key: 'foo', value: null }],
+      })
+
+      expect(accepted).toHaveLength(0)
+    })
+
+    it('should keep the last value of a repeated scalar key', () => {
+      const { accepted } = mergeAndSanitiseProps({
+        prevProps: [],
+        newProps: [
+          { key: 'foo', value: 'first' },
+          { key: 'foo', value: 'last' },
+        ],
+      })
+
+      expect(accepted).toHaveLength(1)
+      expect(accepted[0]).toMatchObject({ key: 'foo', value: 'last' })
+    })
+
+    it('should delete a scalar prop when its last value is null', () => {
+      const { accepted } = mergeAndSanitiseProps({
+        prevProps: [makeProp('foo', 'bar')],
+        newProps: [
+          { key: 'foo', value: 'value' },
+          { key: 'foo', value: null },
+        ],
       })
 
       expect(accepted).toHaveLength(0)
@@ -152,15 +196,112 @@ describe('mergeAndSanitiseProps', () => {
   })
 
   describe('extraFilter', () => {
-    it('should preserve [] props excluded by extraFilter', () => {
-      const { accepted } = mergeAndSanitiseProps({
-        prevProps: [makeProp('META_tags[]', 'internal')],
-        newProps: [{ key: 'META_tags[]', value: 'override' }],
-        extraFilter: (p) => !p.key.startsWith('META_'),
+    it('should drop props excluded by extraFilter', () => {
+      const { accepted } = hardSanitiseProps({
+        props: [
+          { key: 'secret_tags[]', value: 'internal' },
+          { key: 'tags[]', value: 'public' },
+        ],
+        extraFilter: (p) => !p.key.startsWith('secret_'),
       })
 
       expect(accepted).toHaveLength(1)
-      expect(accepted[0]).toMatchObject({ key: 'META_tags[]', value: 'internal' })
+      expect(accepted[0]).toMatchObject({ key: 'tags[]', value: 'public' })
+    })
+  })
+
+  describe('reserved keys', () => {
+    it('should report a repeated reserved key once', () => {
+      const { rejected } = mergeAndSanitiseProps({
+        prevProps: [],
+        newProps: [
+          { key: 'META_BREAK_THINGS', value: 'first' },
+          { key: 'META_BREAK_THINGS', value: 'last' },
+        ],
+      })
+
+      expect(rejected).toHaveLength(1)
+    })
+
+    it('should reject new META_ props', () => {
+      const { accepted, rejected } = mergeAndSanitiseProps({
+        prevProps: [],
+        newProps: [
+          { key: 'META_BREAK_THINGS', value: 'true' },
+          { key: 'normal', value: 'value' },
+        ],
+      })
+
+      expect(accepted).toHaveLength(1)
+      expect(accepted[0]).toMatchObject({ key: 'normal', value: 'value' })
+      expect(rejected).toStrictEqual([
+        {
+          key: 'META_BREAK_THINGS',
+          error: 'PROP_KEY_RESERVED',
+          message: RESERVED_PROP_KEY_MESSAGE,
+        },
+      ])
+    })
+
+    it('should keep stored META_ props that the request does not touch', () => {
+      const { accepted } = mergeAndSanitiseProps({
+        prevProps: [makeProp('META_DEV_BUILD', '1')],
+        newProps: [{ key: 'normal', value: 'value' }],
+      })
+
+      expect(accepted).toHaveLength(2)
+      expect(accepted.find((p) => p.key === 'META_DEV_BUILD')?.value).toBe('1')
+    })
+
+    it('should not overwrite a stored META_ prop', () => {
+      const { accepted, rejected } = mergeAndSanitiseProps({
+        prevProps: [makeProp('META_DEV_BUILD', '1')],
+        newProps: [{ key: 'META_DEV_BUILD', value: '0' }],
+      })
+
+      expect(accepted).toHaveLength(1)
+      expect(accepted[0]).toMatchObject({ key: 'META_DEV_BUILD', value: '1' })
+      expect(rejected).toHaveLength(1)
+    })
+
+    it('should ignore a reserved prop that keeps its stored value', () => {
+      const { accepted, rejected } = mergeAndSanitiseProps({
+        prevProps: [makeProp('META_DEV_BUILD', '1')],
+        newProps: [
+          { key: 'META_DEV_BUILD', value: '1' },
+          { key: 'level', value: '5' },
+        ],
+      })
+
+      expect(accepted).toHaveLength(2)
+      expect(accepted.find((p) => p.key === 'level')?.value).toBe('5')
+      expect(rejected).toHaveLength(0)
+    })
+
+    it('should allow META_ props from a trusted source', () => {
+      const { accepted, rejected } = hardSanitiseProps({
+        props: [{ key: 'META_STEAMWORKS_VAC_BANNED', value: 'false' }],
+        allowReservedKeys: true,
+      })
+
+      expect(rejected).toHaveLength(0)
+      expect(accepted).toHaveLength(1)
+      expect(accepted[0]).toMatchObject({ key: 'META_STEAMWORKS_VAC_BANNED', value: 'false' })
+    })
+
+    it('should reject META_ props at the game boundary', () => {
+      const { accepted, rejected } = hardSanitiseProps({
+        props: [{ key: 'META_STEAMWORKS_VAC_BANNED', value: 'false' }],
+      })
+
+      expect(accepted).toHaveLength(0)
+      expect(rejected).toStrictEqual([
+        {
+          key: 'META_STEAMWORKS_VAC_BANNED',
+          error: 'PROP_KEY_RESERVED',
+          message: RESERVED_PROP_KEY_MESSAGE,
+        },
+      ])
     })
   })
 

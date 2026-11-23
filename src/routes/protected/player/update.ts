@@ -7,12 +7,7 @@ import User, { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
-import {
-  isReservedPropKey,
-  mergeAndSanitiseProps,
-  RESERVED_PROP_KEY_MESSAGE,
-  sanitiseProps,
-} from '../../../lib/props/sanitiseProps.js'
+import { mergeAndSanitiseProps, sanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
@@ -46,29 +41,18 @@ export async function updatePlayerHandler({
         let rejectedProps: RejectedProp[] = []
 
         if (props) {
-          const metaRejected: RejectedProp[] = !forwarded
-            ? props
-                .filter((prop) => isReservedPropKey(prop.key))
-                .map((prop) => ({
-                  key: prop.key,
-                  error: 'PROP_KEY_RESERVED',
-                  message: RESERVED_PROP_KEY_MESSAGE,
-                }))
-            : []
-
           const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
             prevProps: lockedPlayer.props.getItems(),
             newProps: props,
-            extraFilter: (prop) => !isReservedPropKey(prop.key),
           })
 
           if (lockedPlayer.game.blockPropsProfanity) {
             const { accepted, rejected: profanityRejected } = filterProfaneProps(sizeAccepted, true)
             lockedPlayer.setProps(accepted)
-            rejectedProps = [...metaRejected, ...sizeRejected, ...profanityRejected]
+            rejectedProps = [...sizeRejected, ...profanityRejected]
           } else {
             lockedPlayer.setProps(sizeAccepted)
-            rejectedProps = [...metaRejected, ...sizeRejected]
+            rejectedProps = sizeRejected
           }
 
           if (!forwarded && actor) {

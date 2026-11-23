@@ -2,7 +2,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import GameChannel from '../../../entities/game-channel.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadChannel, joinChannel } from './common.js'
@@ -16,9 +16,7 @@ export const joinRoute = apiRoute({
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.WRITE_GAME_CHANNELS]),

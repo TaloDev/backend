@@ -8,6 +8,7 @@ import PlayerAlias from '../../../entities/player-alias.js'
 import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import {
+  applyReservedKeyRule,
   isArrayKey,
   MAX_ARRAY_LENGTH,
   sanitiseProps,
@@ -15,7 +16,7 @@ import {
 } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadChannel } from './common.js'
@@ -155,9 +156,7 @@ export const putStorageRoute = apiRoute({
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       props: z
         .array(
@@ -190,7 +189,8 @@ export const putStorageRoute = apiRoute({
       return ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    const sanitised = sanitiseProps({ props })
+    const { props: allowed, rejected: reservedRejected } = applyReservedKeyRule({ props })
+    const sanitised = sanitiseProps({ props: allowed })
     const { accepted, rejected: profanityRejected } = filterProfaneProps(
       sanitised,
       ctx.state.game.blockPropsProfanity,
@@ -269,7 +269,7 @@ export const putStorageRoute = apiRoute({
         channel,
         upsertedProps,
         deletedProps,
-        failedProps: [...sizeRejected, ...profanityRejected],
+        failedProps: [...reservedRejected, ...sizeRejected, ...profanityRejected],
       },
     }
   },

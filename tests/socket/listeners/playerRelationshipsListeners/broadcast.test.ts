@@ -66,6 +66,126 @@ describe('Player relationship listeners - broadcast', () => {
     })
   })
 
+  it('should treat a null aliasIds as every confirmed subscriber', async () => {
+    const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYER_BROADCASTS,
+      APIKeyScope.READ_PLAYER_BROADCASTS,
+    ])
+
+    const subscriber1 = await new PlayerFactory([apiKey.game]).one()
+    const subscriber2 = await new PlayerFactory([apiKey.game]).one()
+
+    const subscription1 = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(subscriber1.aliases[0])
+      .withSubscribedTo(player.aliases[0])
+      .confirmed()
+      .one()
+    const subscription2 = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(subscriber2.aliases[0])
+      .withSubscribedTo(player.aliases[0])
+      .confirmed()
+      .one()
+    await em.persist([subscriber1, subscriber2, subscription1, subscription2]).flush()
+
+    const { identifyMessage: sub1IdentifyMessage, ticket: sub1Ticket } =
+      await persistTestSocketTicket(apiKey, subscriber1)
+    const { identifyMessage: sub2IdentifyMessage, ticket: sub2Ticket } =
+      await persistTestSocketTicket(apiKey, subscriber2)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (broadcaster, _wss, port) => {
+      const sub1Client = await createTestClient(port, `/?ticket=${sub1Ticket}`, {
+        waitForReady: false,
+      })
+      const sub2Client = await createTestClient(port, `/?ticket=${sub2Ticket}`, {
+        waitForReady: false,
+      })
+
+      await broadcaster.identify(identifyMessage)
+      await sub1Client.identify(sub1IdentifyMessage)
+      await sub2Client.identify(sub2IdentifyMessage)
+
+      broadcaster.sendJson({
+        req: 'v1.player-relationships.broadcast',
+        data: {
+          message: 'Hello everyone!',
+          aliasIds: null,
+        },
+      })
+
+      await sub1Client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.player-relationships.broadcast')
+        expect(actual.data.message).toBe('Hello everyone!')
+      })
+
+      await sub2Client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.player-relationships.broadcast')
+        expect(actual.data.message).toBe('Hello everyone!')
+      })
+    })
+  })
+
+  it('should not broadcast to anyone if aliasIds is empty', async () => {
+    const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYER_BROADCASTS,
+      APIKeyScope.READ_PLAYER_BROADCASTS,
+    ])
+
+    const subscriber1 = await new PlayerFactory([apiKey.game]).one()
+    const subscriber2 = await new PlayerFactory([apiKey.game]).one()
+
+    const subscription1 = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(subscriber1.aliases[0])
+      .withSubscribedTo(player.aliases[0])
+      .confirmed()
+      .one()
+    const subscription2 = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(subscriber2.aliases[0])
+      .withSubscribedTo(player.aliases[0])
+      .confirmed()
+      .one()
+    await em.persist([subscriber1, subscriber2, subscription1, subscription2]).flush()
+
+    const { identifyMessage: sub1IdentifyMessage, ticket: sub1Ticket } =
+      await persistTestSocketTicket(apiKey, subscriber1)
+    const { identifyMessage: sub2IdentifyMessage, ticket: sub2Ticket } =
+      await persistTestSocketTicket(apiKey, subscriber2)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (broadcaster, _wss, port) => {
+      const sub1Client = await createTestClient(port, `/?ticket=${sub1Ticket}`, {
+        waitForReady: false,
+      })
+      const sub2Client = await createTestClient(port, `/?ticket=${sub2Ticket}`, {
+        waitForReady: false,
+      })
+
+      await broadcaster.identify(identifyMessage)
+      await sub1Client.identify(sub1IdentifyMessage)
+      await sub2Client.identify(sub2IdentifyMessage)
+
+      broadcaster.sendJson({
+        req: 'v1.player-relationships.broadcast',
+        data: {
+          message: 'Hello nobody!',
+          aliasIds: [],
+        },
+      })
+
+      await sub1Client.dontExpectJson((actual) => {
+        expect(actual.res).toBe('v1.player-relationships.broadcast')
+      })
+
+      await sub2Client.dontExpectJson((actual) => {
+        expect(actual.res).toBe('v1.player-relationships.broadcast')
+      })
+
+      await broadcaster.dontExpectJson((actual) => {
+        expect(actual.res).toBe('v1.error')
+      })
+    })
+  })
+
   it('should only broadcast to the aliases in aliasIds', async () => {
     const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,

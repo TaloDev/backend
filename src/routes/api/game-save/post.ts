@@ -2,7 +2,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import GameSave from '../../../entities/game-save.js'
 import handleSQLError from '../../../lib/errors/handleSQLError.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { playerHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadPlayer } from '../../../middleware/player-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { decodeContent } from './common.js'
@@ -12,9 +12,7 @@ export const postRoute = apiRoute({
   method: 'post',
   docs: postDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-player': playerHeaderSchema,
-    }),
+    headers: playerHeaders,
     body: z.object({
       name: z.string().meta({ description: 'The name of the save' }),
       content: z

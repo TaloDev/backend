@@ -9,8 +9,10 @@ import PlayerAuthActivity, {
 import PlayerAuth from '../../../entities/player-auth.js'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import {
+  playerAliasHeaderSchema,
+  playerHeaderSchema,
+} from '../../../lib/validation/playerHeadersSchema.js'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { deleteClickHousePlayerData } from '../../../tasks/deletePlayers.js'

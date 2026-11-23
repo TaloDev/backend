@@ -2,7 +2,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
 import { getEntryPositions } from '../../../lib/leaderboards/getEntryPositions.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadLeaderboard } from './common.js'
@@ -15,9 +15,7 @@ export const topRoute = apiRoute({
   path: '/:internalName/entries/top',
   docs: topDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     route: z.object({
       internalName: z.string().meta({ description: 'The internal name of the leaderboard' }),
     }),

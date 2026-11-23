@@ -3,7 +3,7 @@ name: Setup CI
 runs:
   using: 'composite'
   steps:
-    - uses: pnpm/setup@v2
+    - uses: pnpm/setup@v3
       with:
         runtime: node@26
         cache: true

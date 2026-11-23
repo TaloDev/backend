@@ -25,6 +25,7 @@ export type APIRouteState = {
   devBuild: boolean
   currentPlayerId?: string
   currentAliasId?: number
+  sessionPlayerId?: string
   continuityDate?: Date
 }
 

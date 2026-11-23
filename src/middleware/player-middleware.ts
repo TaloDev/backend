@@ -1,5 +1,6 @@
 import { Next } from 'koa'
 import Player from '../entities/player.js'
+import { verifyPlayerClaimKey } from '../lib/auth/claim-key.js'
 import { APIRouteContext } from '../lib/routing/context.js'
 
 export type PlayerRouteState = {
@@ -18,6 +19,8 @@ export async function loadPlayer(ctx: APIRouteContext<PlayerRouteState>, next: N
   }
 
   ctx.state.player = player
+
+  verifyPlayerClaimKey(ctx, player)
 
   await next()
 }

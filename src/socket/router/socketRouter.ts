@@ -5,7 +5,7 @@ import { RawData } from 'ws'
 import { z, ZodError, ZodType } from 'zod'
 import { APIKeyScope } from '../../entities/api-key.js'
 import Game from '../../entities/game.js'
-import { verifySignature } from '../../lib/auth/verify-signature.js'
+import { SignatureNamespace, verifySignature } from '../../lib/auth/verify-signature.js'
 import Socket from '../index.js'
 import gameChannelListeners from '../listeners/gameChannelListeners.js'
 import playerListeners from '../listeners/playerListeners.js'
@@ -25,6 +25,14 @@ const socketMessageValidator = z.compile(
 )
 
 type SocketMessage = z.infer<typeof socketMessageValidator>
+
+function parseJson(json: string): unknown {
+  try {
+    return JSON.parse(json)
+  } catch {
+    return undefined
+  }
+}
 
 const routes: SocketMessageListener<ZodType>[][] = [
   playerListeners,
@@ -87,7 +95,7 @@ export default class SocketRouter {
           }
         }
 
-        parsedMessage = socketMessageValidator.parse(JSON.parse(jsonString))
+        parsedMessage = socketMessageValidator.parse(parseJson(jsonString))
 
         addBreadcrumb({
           category: 'message',
@@ -266,7 +274,7 @@ export default class SocketRouter {
       signature,
       rawPayload,
       game,
-      aliasId: conn.playerAliasId,
+      namespace: SignatureNamespace.alias(conn.playerAliasId),
       em,
       redis: this.wss.redis,
     })

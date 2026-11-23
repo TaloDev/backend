@@ -1,6 +1,7 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerAliasSubscription from '../../../../src/entities/player-alias-subscription.js'
+import { RESERVED_PROP_KEY_MESSAGE } from '../../../../src/lib/props/sanitiseProps.js'
 import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
@@ -268,6 +269,65 @@ describe('Player relationship API - create', () => {
         key: 'nickname',
         error: 'PROP_CONTAINS_PROFANITY',
         message: 'Prop value contains profanity',
+      },
+    ])
+    expect(await em.repo(PlayerAliasSubscription).count({ subscriber: player1.aliases[0] })).toBe(0)
+  })
+
+  it('should store the last value when a prop key is duplicated', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+    const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/relationships')
+      .send({
+        aliasId: player2.aliases[0].id,
+        relationshipType: 'unidirectional',
+        props: [
+          { key: 'rank', value: 'gold' },
+          { key: 'rank', value: 'silver' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.subscription.props).toEqual([{ key: 'rank', value: 'silver' }])
+
+    const subscription = await em
+      .repo(PlayerAliasSubscription)
+      .findOneOrFail(res.body.subscription.id, { populate: ['props'] })
+    expect(
+      subscription.props.getItems().map((prop) => ({ key: prop.key, value: prop.value })),
+    ).toEqual([{ key: 'rank', value: 'silver' }])
+  })
+
+  it('should reject reserved prop keys', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+    const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/relationships')
+      .send({
+        aliasId: player2.aliases[0].id,
+        relationshipType: 'unidirectional',
+        props: [
+          { key: 'nickname', value: 'bestie' },
+          { key: 'META_internal', value: 'true' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .expect(400)
+
+    expect(res.body.errors).toEqual({ props: ['One or more props are invalid, see rejectedProps'] })
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'META_internal',
+        error: 'PROP_KEY_RESERVED',
+        message: RESERVED_PROP_KEY_MESSAGE,
       },
     ])
     expect(await em.repo(PlayerAliasSubscription).count({ subscriber: player1.aliases[0] })).toBe(0)

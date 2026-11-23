@@ -1,7 +1,7 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -17,9 +17,7 @@ export const putRoute = apiRoute({
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       name: z.string().optional().meta({ description: 'The new name of the channel' }),
       props: updatePropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' }),

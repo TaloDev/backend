@@ -18,18 +18,15 @@ export async function purgeEvents({
   cutoff?: Date
   pageSize?: number
 }) {
-  const cutoffClause = ' AND created_at < {cutoff:String}'
+  const where =
+    'game_id = {gameId:UInt32} AND name = {eventName:String} AND created_at < {cutoff:String}'
   const params = {
     gameId,
     eventName,
     cutoff: formatDateForClickHouse(cutoff),
   }
 
-  const countQuery = `
-    SELECT count() AS count FROM events
-    WHERE game_id = {gameId:UInt32}
-      AND name = {eventName:String}${cutoffClause}
-  `
+  const countQuery = `SELECT count() AS count FROM events WHERE ${where}`
 
   const [{ count }] = await clickhouse
     .query({ query: countQuery, query_params: params, format: 'JSONEachRow' })
@@ -41,7 +38,7 @@ export async function purgeEvents({
 
   await forEachEventPage({
     clickhouse,
-    where: `game_id = {gameId:UInt32} AND name = {eventName:String}${cutoffClause}`,
+    where,
     params,
     pageSize,
     onPage: (rows) =>
@@ -49,11 +46,7 @@ export async function purgeEvents({
   })
 
   await clickhouse.command({
-    query: `
-      DELETE FROM events
-      WHERE game_id = {gameId:UInt32}
-        AND name = {eventName:String}${cutoffClause}
-    `,
+    query: `DELETE FROM events WHERE ${where}`,
     query_params: params,
   })
 

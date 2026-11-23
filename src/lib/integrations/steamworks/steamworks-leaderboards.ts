@@ -114,9 +114,9 @@ export async function createSteamworksLeaderboardEntry(
       throw new SteamworksNetworkError()
     }
 
-    const resultCode = getSteamResultCode(res?.data)
+    const resultCode = getSteamResultCode(res.data)
     if (resultCode !== STEAM_RESULT_OK) {
-      throw new SteamworksResultError(resultCode, res?.status ?? 0)
+      throw new SteamworksResultError(resultCode, res.status)
     }
 
     await em.upsert(

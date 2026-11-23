@@ -53,12 +53,11 @@ async function requestSetSteamworksUserStat({
   })
 
   const client = new SteamworksClient(integration)
-  const { res, event, success } = await client.makeRequest({
+  return client.makeRequest({
     method: 'POST',
     url: '/ISteamUserStats/SetUserStatsForGame/v1',
     body,
   })
-  return { res, event, success }
 }
 
 export async function setSteamworksStat(
@@ -79,9 +78,9 @@ export async function setSteamworksStat(
     throw new SteamworksNetworkError()
   }
 
-  const resultCode = getSteamResultCode(res?.data)
+  const resultCode = getSteamResultCode(res.data)
   if (resultCode !== STEAM_RESULT_OK) {
-    throw new SteamworksResultError(resultCode, res?.status ?? 0)
+    throw new SteamworksResultError(resultCode, res.status)
   }
 
   await em.upsert(

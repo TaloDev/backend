@@ -206,11 +206,14 @@ export class SteamworksClient {
     method: SteamworksRequest['method']
     url: string
     body?: string
-  }): Promise<{
-    res: AxiosResponse<T, SteamworksRequestConfig> | null
-    event: SteamworksIntegrationEvent
-    success: boolean
-  }> {
+  }): Promise<
+    | {
+        res: AxiosResponse<T, SteamworksRequestConfig>
+        event: SteamworksIntegrationEvent
+        success: true
+      }
+    | { res: null; event: SteamworksIntegrationEvent; success: false }
+  > {
     const config = this.createSteamworksRequestConfig({ method, url, body })
     const event = this.createSteamworksIntegrationEvent(config)
 

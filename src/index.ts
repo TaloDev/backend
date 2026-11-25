@@ -13,6 +13,7 @@ import { configureAPIRoutes } from './config/api-routes.js'
 import { configureProtectedRoutes } from './config/protected-routes.js'
 import { initProviders } from './config/providers.js'
 import { configurePublicRoutes } from './config/public-routes.js'
+import { trustedProxyHops } from './lib/proxy/trustedProxyHops.js'
 import { corsMiddleware } from './middleware/cors-middleware.js'
 import { devDataMiddleware } from './middleware/dev-data-middleware.js'
 import { errorMiddleware } from './middleware/error-middleware.js'
@@ -30,6 +31,7 @@ const isTest = process.env.NODE_ENV === 'test'
 export default async function init() {
   const app = new Koa()
   app.proxy = process.env.NO_PROXY !== '1'
+  app.maxIpsCount = trustedProxyHops()
 
   await initProviders(app, isTest)
 

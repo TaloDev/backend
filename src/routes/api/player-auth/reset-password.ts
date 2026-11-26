@@ -5,8 +5,18 @@ import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.j
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
-import { createPlayerAuthActivity, getRedisPasswordResetKey } from './common.js'
+import {
+  createPlayerAuthActivity,
+  getRedisPasswordResetAliasKey,
+  getRedisPasswordResetKey,
+} from './common.js'
 import { resetPasswordDocs } from './docs.js'
+
+const invalidCodeError = {
+  status: 401,
+  message: 'This code is either invalid or has expired',
+  errorCode: 'PASSWORD_RESET_CODE_INVALID',
+} as const
 
 export const resetPasswordRoute = apiRoute({
   method: 'post',
@@ -28,7 +38,7 @@ export const resetPasswordRoute = apiRoute({
     const key = ctx.state.key
 
     const redis = ctx.redis
-    const aliasId = await redis.get(getRedisPasswordResetKey(key, code))
+    const aliasId = await redis.getdel(getRedisPasswordResetKey(key, code))
     const alias = await em.repo(PlayerAlias).findOne(
       {
         id: Number(aliasId),
@@ -42,15 +52,13 @@ export const resetPasswordRoute = apiRoute({
     )
 
     if (!aliasId || !alias || !alias.player.auth) {
-      return throwPlayerAuthError({
-        ctx,
-        status: 401,
-        message: 'This code is either invalid or has expired',
-        errorCode: 'PASSWORD_RESET_CODE_INVALID',
-      })
+      return throwPlayerAuthError({ ctx, ...invalidCodeError })
     }
 
-    await redis.del(getRedisPasswordResetKey(key, code))
+    const currentCode = await redis.get(getRedisPasswordResetAliasKey(key, alias.id))
+    if (currentCode !== code) {
+      return throwPlayerAuthError({ ctx, ...invalidCodeError })
+    }
 
     alias.player.auth.password = await bcrypt.hash(password, 10)
     alias.player.auth.clearSession()

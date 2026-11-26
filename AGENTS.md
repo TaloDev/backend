@@ -218,3 +218,4 @@ if (!player) {
 - API endpoints require scope checks via `requireScopes()` middleware
 - Admin API endpoints require scope checks via `requireAdminScopes()` middleware
 - Protected endpoints require user type checks via `userTypeGate()` or `ownerGate()` middleware
+- No non-null assertions (`!`) outside entity models. When the alternative would make the code unrealistic or untestable, use `assert` from `node:assert`. As a last resort, use `/* v8 ignore ... -- @preserve */`

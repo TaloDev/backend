@@ -4,7 +4,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import { PlayerAliasService } from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import PlayerAuth from '../../../entities/player-auth.js'
-import { generateSixDigitCode } from '../../../lib/auth/generateSixDigitCode.js'
+import { generateCode } from '../../../lib/auth/code.js'
 import queueEmail from '../../../lib/messaging/queueEmail.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -49,7 +49,7 @@ export const forgotPasswordRoute = apiRoute({
       )
 
       if (alias) {
-        const code = generateSixDigitCode()
+        const code = generateCode()
         await storePasswordResetCode(redis, key, alias.id, code)
         await queueEmail(getGlobalQueue('email'), new PlayerAuthResetPassword(alias, code))
 

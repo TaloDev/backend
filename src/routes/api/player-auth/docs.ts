@@ -80,7 +80,7 @@ export const verifyDocs = {
       title: 'Sample request',
       sample: {
         aliasId: 1,
-        code: '023251',
+        code: 'K9P2QA',
       },
     },
     {
@@ -155,7 +155,7 @@ export const resetPasswordDocs = {
     {
       title: 'Sample request',
       sample: {
-        code: '642230',
+        code: 'T4M7RX',
         password: 'new_password',
       },
     },

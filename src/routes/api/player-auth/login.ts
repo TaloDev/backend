@@ -8,7 +8,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import { PlayerAliasService } from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
-import { generateSixDigitCode } from '../../../lib/auth/generateSixDigitCode.js'
+import { generateCode } from '../../../lib/auth/code.js'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 import queueEmail from '../../../lib/messaging/queueEmail.js'
 import { findAliasFromIdentifyRequest } from '../../../lib/players/findAlias.js'
@@ -60,7 +60,7 @@ export async function loginHandler({
   }
 
   if (alias.player.auth.verificationEnabled) {
-    const code = generateSixDigitCode()
+    const code = generateCode()
     await redis.set(getRedisAuthKey(alias), code, 'EX', 300)
     await queueEmail(getGlobalQueue('email'), new PlayerAuthCode(alias, code))
 

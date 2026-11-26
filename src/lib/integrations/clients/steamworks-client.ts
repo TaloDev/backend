@@ -140,6 +140,32 @@ export class SteamworksNetworkError extends Error {
   }
 }
 
+export class SteamworksResultError extends Error {
+  constructor(
+    readonly resultCode: number | null,
+    readonly status: number,
+  ) {
+    const reason = resultCode === null ? 'no result code' : `result ${resultCode}`
+    super(`Steamworks request failed (status ${status}, ${reason})`)
+  }
+}
+
+export const STEAM_RESULT_OK = 1
+
+export function getSteamResultCode(body: unknown): number | null {
+  if (typeof body !== 'object' || body === null) {
+    return null
+  }
+
+  const { result, response } = body as {
+    result?: { result?: unknown }
+    response?: { result?: unknown }
+  }
+  const code = result?.result ?? response?.result
+
+  return typeof code === 'number' ? code : null
+}
+
 export class SteamworksClient {
   constructor(private readonly integration: Integration) {}
 
@@ -180,11 +206,14 @@ export class SteamworksClient {
     method: SteamworksRequest['method']
     url: string
     body?: string
-  }): Promise<{
-    res: AxiosResponse<T, SteamworksRequestConfig> | null
-    event: SteamworksIntegrationEvent
-    success: boolean
-  }> {
+  }): Promise<
+    | {
+        res: AxiosResponse<T, SteamworksRequestConfig>
+        event: SteamworksIntegrationEvent
+        success: true
+      }
+    | { res: null; event: SteamworksIntegrationEvent; success: false }
+  > {
     const config = this.createSteamworksRequestConfig({ method, url, body })
     const event = this.createSteamworksIntegrationEvent(config)
 

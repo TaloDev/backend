@@ -1,4 +1,5 @@
 import UserAccessCode from '../../../entities/user-access-code.js'
+import { normaliseCode } from '../../../lib/auth/code.js'
 import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const confirmEmailRoute = protectedRoute({
@@ -18,7 +19,7 @@ export const confirmEmailRoute = protectedRoute({
     try {
       accessCode = await em.repo(UserAccessCode).findOneOrFail({
         user,
-        code,
+        code: normaliseCode(code),
         validUntil: {
           $gt: new Date(),
         },

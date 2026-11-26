@@ -1,4 +1,5 @@
 import type { EntityManager } from '@mikro-orm/mysql'
+import type { Redis } from 'ioredis'
 import type { Next } from 'koa'
 import assert from 'node:assert'
 import type { APIRouteContext } from '../../../lib/routing/context.js'
@@ -11,6 +12,8 @@ import PlayerAuthActivity, {
 import PlayerAuth from '../../../entities/player-auth.js'
 import Player from '../../../entities/player.js'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
+
+const PASSWORD_RESET_CODE_TTL_SECONDS = 900 // 15 mins, same as the email
 
 export type PlayerAuthRouteState = {
   alias: PlayerAlias
@@ -38,8 +41,37 @@ export function getRedisAuthKey(alias: PlayerAlias) {
   return `player-auth:${alias.player.game.id}:verification:${alias.id}`
 }
 
+export function getPasswordResetPrefix(key: APIKey) {
+  return `player-auth:${key.game.id}:password-reset:`
+}
+
 export function getRedisPasswordResetKey(key: APIKey, code: string) {
-  return `player-auth:${key.game.id}:password-reset:${code}`
+  return `${getPasswordResetPrefix(key)}${code}`
+}
+
+export function getRedisPasswordResetAliasKey(key: APIKey, aliasId: number) {
+  return `player-auth:${key.game.id}:password-reset-alias:${aliasId}`
+}
+
+// the alias key holds the code, so each request replaces the previous code
+export async function storePasswordResetCode(
+  redis: Redis,
+  key: APIKey,
+  aliasId: number,
+  code: string,
+) {
+  await redis.set(
+    getRedisPasswordResetAliasKey(key, aliasId),
+    code,
+    'EX',
+    PASSWORD_RESET_CODE_TTL_SECONDS,
+  )
+  await redis.set(
+    getRedisPasswordResetKey(key, code),
+    aliasId,
+    'EX',
+    PASSWORD_RESET_CODE_TTL_SECONDS,
+  )
 }
 
 export function createPlayerAuthActivity(

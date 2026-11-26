@@ -10,9 +10,12 @@ import { streamByCursor } from '../../perf/streamByCursor.js'
 import {
   GetSchemaForGameResponse,
   GetUserStatsForGameResponse,
+  getSteamResultCode,
+  STEAM_RESULT_OK,
   SteamworksClient,
   SteamworksGameStat,
   SteamworksNetworkError,
+  SteamworksResultError,
 } from '../clients/steamworks-client.js'
 
 async function getSteamworksStatsForPlayer(
@@ -50,12 +53,11 @@ async function requestSetSteamworksUserStat({
   })
 
   const client = new SteamworksClient(integration)
-  const { event, success } = await client.makeRequest({
+  return client.makeRequest({
     method: 'POST',
     url: '/ISteamUserStats/SetUserStatsForGame/v1',
     body,
   })
-  return { event, success }
 }
 
 export async function setSteamworksStat(
@@ -64,7 +66,7 @@ export async function setSteamworksStat(
   playerStat: PlayerGameStat,
   playerAlias: PlayerAlias,
 ) {
-  const { event, success } = await requestSetSteamworksUserStat({
+  const { res, event, success } = await requestSetSteamworksUserStat({
     integration,
     stat: playerStat.stat,
     steamUserId: playerAlias.identifier,
@@ -74,6 +76,11 @@ export async function setSteamworksStat(
 
   if (!success) {
     throw new SteamworksNetworkError()
+  }
+
+  const resultCode = getSteamResultCode(res.data)
+  if (resultCode !== STEAM_RESULT_OK) {
+    throw new SteamworksResultError(resultCode, res.status)
   }
 
   await em.upsert(

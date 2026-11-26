@@ -4,12 +4,11 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import { PlayerAliasService } from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import PlayerAuth from '../../../entities/player-auth.js'
-import { generateSixDigitCode } from '../../../lib/auth/generateSixDigitCode.js'
-import { RESET_TOKEN_TTL_SECONDS } from '../../../lib/auth/resetToken.js'
+import { generateCode } from '../../../lib/auth/code.js'
 import queueEmail from '../../../lib/messaging/queueEmail.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
-import { createPlayerAuthActivity, getRedisPasswordResetKey } from './common.js'
+import { createPlayerAuthActivity, storePasswordResetCode } from './common.js'
 import { forgotPasswordDocs } from './docs.js'
 
 export const forgotPasswordRoute = apiRoute({
@@ -50,13 +49,8 @@ export const forgotPasswordRoute = apiRoute({
       )
 
       if (alias) {
-        const code = generateSixDigitCode()
-        await redis.set(
-          getRedisPasswordResetKey(key, code),
-          alias.id,
-          'EX',
-          RESET_TOKEN_TTL_SECONDS,
-        )
+        const code = generateCode()
+        await storePasswordResetCode(redis, key, alias.id, code)
         await queueEmail(getGlobalQueue('email'), new PlayerAuthResetPassword(alias, code))
 
         createPlayerAuthActivity(ctx, playerAuth.player, {

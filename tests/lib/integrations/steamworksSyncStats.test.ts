@@ -446,6 +446,86 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
   })
 
+  it('should not save a steamworks player stat when steamworks rejects the stat', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const statName = 'stat_' + randSlug()
+
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 54 }))
+      .one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
+
+    await em.persist([player, playerStat, integration]).flush()
+
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
+      )
+      .replyOnce(() => [
+        200,
+        {
+          game: {
+            gameName: game.name,
+            gameVersion: '22',
+            availableGameStats: {
+              stats: [
+                {
+                  name: statName,
+                  defaultvalue: 500,
+                  displayName: randText(),
+                },
+              ],
+              achievements: [],
+            },
+          },
+        },
+      ])
+
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
+      )
+      .replyOnce(() => [
+        200,
+        {
+          playerstats: {
+            steamID: player.aliases[0].identifier,
+            gameName: game.name,
+            stats: [],
+            achievements: [],
+          },
+        },
+      ])
+
+    const setMock = vi.fn(() => [
+      200,
+      {
+        response: {
+          result: 8,
+          error: `'${statName}' does not match any stat or achievement name for this app`,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1')
+      .replyOnce(setMock)
+
+    await syncSteamworksStats(em, integration)
+
+    expect(setMock).toHaveBeenCalledTimes(1)
+
+    const steamworksStat = await em.repo(SteamworksPlayerStat).findOne({ playerStat })
+    expect(steamworksStat).toBeNull()
+  })
+
   it('should continue to push through stats from talo into steamworks even if some fail', async () => {
     const [, game] = await createOrganisationAndGame()
 

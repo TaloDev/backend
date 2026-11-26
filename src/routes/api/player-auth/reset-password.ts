@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import { normaliseCode } from '../../../lib/auth/code.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -25,14 +26,15 @@ export const resetPasswordRoute = apiRoute({
   schema: (z) => ({
     body: z.object({
       code: z.string().meta({
-        description: 'The 6-digit verification code sent to the email address (must be a string)',
+        description: 'The verification code sent to the email address (must be a string)',
       }),
       password: z.string().meta({ description: 'The new password for the player' }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
-    const { password, code } = ctx.state.validated.body
+    const { password, code: submittedCode } = ctx.state.validated.body
+    const code = normaliseCode(submittedCode)
     const em = ctx.em
 
     const key = ctx.state.key

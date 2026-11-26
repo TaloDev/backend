@@ -3,6 +3,7 @@ import type { Redis } from 'ioredis'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import { normaliseCode } from '../../../lib/auth/code.js'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -46,7 +47,7 @@ export async function verifyHandler({
 
   const redisCode = await redis.get(getRedisAuthKey(alias))
 
-  if (!redisCode || code !== redisCode) {
+  if (!redisCode || normaliseCode(code) !== redisCode) {
     buildPlayerAuthActivity({
       em,
       player: alias.player,
@@ -93,7 +94,7 @@ export const verifyRoute = apiRoute({
     body: z.object({
       aliasId: z.number().meta({ description: 'The ID of the alias to verify' }),
       code: z.string().meta({
-        description: 'The 6-digit verification code sent to the player (must be a string)',
+        description: 'The verification code sent to the player (must be a string)',
       }),
       withRefresh: z.boolean().optional().meta({
         description:

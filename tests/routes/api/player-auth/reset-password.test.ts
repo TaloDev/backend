@@ -26,15 +26,15 @@ describe('Player auth API - reset password', () => {
 
     await em.persist(player).flush()
 
-    await storePasswordResetCode(redis, apiKey, alias.id, '123456')
+    await storePasswordResetCode(redis, apiKey, alias.id, 'AB12CD')
 
     await request(app)
       .post('/v1/players/auth/reset_password')
-      .send({ code: '123456', password: 'password' })
+      .send({ code: ' ab12cd ', password: 'password' })
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    expect(await redis.get(getRedisPasswordResetKey(apiKey, '123456'))).toBeNull()
+    expect(await redis.get(getRedisPasswordResetKey(apiKey, 'AB12CD'))).toBeNull()
 
     await em.refresh(player.auth!)
     expect(await bcrypt.compare('password', player.auth!.password)).toBe(true)

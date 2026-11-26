@@ -31,11 +31,11 @@ describe('Player auth API - verify', () => {
 
     await em.persist(player).flush()
 
-    await redis.set(`player-auth:${apiKey.game.id}:verification:${alias.id}`, '123456')
+    await redis.set(`player-auth:${apiKey.game.id}:verification:${alias.id}`, 'AB12CD')
 
     const res = await request(app)
       .post('/v1/players/auth/verify')
-      .send({ aliasId: alias.id, code: '123456' })
+      .send({ aliasId: alias.id, code: ' ab12cd ' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
